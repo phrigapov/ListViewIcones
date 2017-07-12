@@ -2,8 +2,11 @@ package com.example.paulo.listviewicones
 
 import android.R.layout.simple_list_item_1
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -11,19 +14,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-enum class EstadoAtual {
-    FAZENDO {
-        public override fun toString():String {
-            return "Fazendo"
-        }
-    }, FINALIZADO {
-        public override fun toString():String {
-            return "finalizado"
-        }
-    }
-}
-
-data class AdapterIconesPersonalizado(var icones: List<Icone>, var act: Activity): BaseAdapter(){
+data class AdapterIconesPersonalizado(var icones: MutableList<Icone>, var act: Activity, var isEditing: Boolean): BaseAdapter(){
 
     override fun getCount():Int {
         return icones.size
@@ -43,16 +34,34 @@ data class AdapterIconesPersonalizado(var icones: List<Icone>, var act: Activity
         var nome : TextView = view.findViewById<TextView>(R.id.lista_curso_personalizada_nome)
         var descricao : TextView = view.findViewById(R.id.lista_curso_personalizada_descricao)
         var imagem : ImageView = view.findViewById(R.id.lista_curso_personalizada_imagem)
+        var btnRemover : Button = view.findViewById(R.id.lista_curso_personalizada_bntRemover)
 
-        //populando as Views
+        // populando as Views
         nome.setText(icone.nome)
         descricao.setText(icone.descricao)
         //imagem.setImageResource(icone.imagemIcone)
         //imagem.setImageResource()
 
         imagem.setImageResource(icone.imagemIcone)
+        btnRemover.id = position
+
+        if (isEditing == true){
+            btnRemover.visibility = Button.VISIBLE
+        }
 
         return view
+
+    }
+
+    fun mostrarDelete(){
+        isEditing = true
+        this.notifyDataSetChanged()
+    }
+
+    fun deleteItem(pos : Int){
+        this.icones.removeAt(pos)
+
+        this.notifyDataSetChanged()
     }
 
     //var icones : List<Icone> = ArrayList<Icone>()
@@ -83,7 +92,7 @@ class ListaDeIconesActivity:AppCompatActivity() {
 
 //
         //var oadapter : ArrayAdapter<String> = ArrayAdapter(this, simple_list_item_1,outraLista)
-        var oadapter : AdapterIconesPersonalizado = AdapterIconesPersonalizado(sList,this)
+        var oadapter: AdapterIconesPersonalizado = AdapterIconesPersonalizado(sList, this,false)
 
         listaDeIcones.adapter = oadapter
 
@@ -94,8 +103,47 @@ class ListaDeIconesActivity:AppCompatActivity() {
 
     fun todosOsIcones(): ArrayList<Icone> {
         return ArrayList(Arrays.asList(
-                Icone("IFood","Alimentação",EstadoAtual.FAZENDO,R.drawable.ifood),
-                    Icone("Mapas","Transporte e Mapas",EstadoAtual.FAZENDO,R.drawable.maps),
-                            Icone("Waze","Transporte e Mapas",EstadoAtual.FAZENDO,R.drawable.waze)))
+                Icone("IFood", "Alimentação", EstadoAtual.FAZENDO, R.drawable.ifood),
+                Icone("Mapas", "Transporte e Mapas", EstadoAtual.FAZENDO, R.drawable.maps),
+                Icone("Waze", "Transporte e Mapas", EstadoAtual.FAZENDO, R.drawable.waze)))
     }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+
+        var listaIcones = findViewById<ListView>(R.id.lista) as ListView
+
+        //passo para a variavel li um adaptador generico
+        var li = listaIcones.adapter
+        if (li !is AdapterIconesPersonalizado){ return false }
+
+        if (item != null) {
+            when (item.getItemId()) {
+                R.id.editar -> {
+
+                    li.mostrarDelete()
+                    // go home
+                    println("item 1")
+                    return true
+                }
+                R.id.sobre -> {
+                    var btn = 
+                    //li.deleteItem(btn.id)
+
+                    println("id: "+btn.id)
+                    return true
+                }
+            }
+        }
+
+
+        return super.onOptionsItemSelected(item)
+    }
+
+
 }
+
